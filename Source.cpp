@@ -55,7 +55,7 @@ int main() {
     wstring distLocation=L"D:\\Fast University\\Programming\\Assignment_3\\root\\Log";
    root.levelOrderTraversal();
    cout << endl;
-    root.moveAFile("LogRepot.txt", sourceLocation);
+    root.moveAFile("LogReport.txt", sourceLocation);
     cout << endl;
    root.levelOrderTraversal();
    /*cout << endl;

@@ -438,7 +438,7 @@ private:
 			}
 			else
 			{
-				cout << "ERROR : directry is full" << endl;
+				cout << "ERROR : directry is ful" << endl;
 				return 0;
 			}
 		}
@@ -517,7 +517,6 @@ private:
 		}
 		if (root->dir->getLocation() == dis)
 		{
-			
 			root->right = insertingNode;
 		}
 
