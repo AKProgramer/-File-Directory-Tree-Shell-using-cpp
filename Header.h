@@ -7,6 +7,7 @@
 #include <codecvt>
 #include<queue>
 #include<filesystem>
+#include<string>
 using namespace std;
 void createADirectry(wstring path)
 {
@@ -30,16 +31,16 @@ void createAFile(string path)
 		cout << "Error in File Creating" << endl;
 	}
 }
-void deleteAFile(string location)
+void deleteFile(string location)
 {
-	if (remove(location.c_str())) {
+	if (!remove(location.c_str())) {
 		cout << "File deleted successfully!" <<endl;
 	}
 	else {
 		cerr << "Error deleting the file " <<endl;
 	}
 }
-void deleteADirectry(wstring location)
+void deleteDirectry(wstring location)
 {
 	if (RemoveDirectory(location.c_str())) {
 		cout << "Directory deleted successfully!" << endl;
@@ -68,6 +69,10 @@ public:
 		path = p;
 		type = t;
 		setLocation(path);
+	}
+	void setType(bool t)
+	{
+		type = t;
 	}
 	void setPath(wstring p)
 	{
@@ -270,34 +275,7 @@ public:
 		}
 		
 	}
-	void deletion(Node* root, wstring location, bool type)
-	{
-		/*if (searching(root, location))
-		{
-			makeDeletion(root, location, type);
-		}
-		else
-		{
-			cout << "ERROR : file or directry not found!" << endl;
-		}*/
-	}
-	// Functions for searching feature
-	/*void searchAFile(Node* root, string name)
-	{
-		if (root == NULL)
-		{
-			return;
-		}
-		
-		if (root->dir->getName() == name)
-		{
-			cout << "OUTPUT : ";
-			wcout<<root->dir->getLocation()<<endl;
-		}
-		searchAFile(root->left, name);
-		searchAFile(root->right, name);
-	}*/
-	bool searchAFile(Node* root, string name)
+	bool printFilePath(Node* root,string name)
 	{
 		if (root == NULL)
 		{
@@ -306,25 +284,27 @@ public:
 
 		if (root->dir->getName() == name)
 		{
+			root->dir->getLocation();
 			return 1;
 		}
-		bool check1=searchAFile(root->left, name);
-		bool check2=searchAFile(root->right, name);
+		bool check1= printFilePath(root->left, name);
+		bool check2= printFilePath(root->right, name);
 		return check1 || check2;
 	}
+	
 	// Functions for merging two directries
-	bool searchADirectry(Node* root, wstring dir)
+	bool searchADirectry(Node* root, wstring location)
 	{
 		if (root == NULL)
 		{
 			return 0;
 		}
-		if (root->dir->getLocation() == dir)
+		if (root->dir->getLocation() == location)
 		{
 			return 1;
 		}
-		bool check1 = searchADirectry(root->left, dir);
-		bool check2 = searchADirectry(root->right, dir);
+		bool check1 = searchADirectry(root->left, location);
+		bool check2 = searchADirectry(root->right, location);
 		return check1 || check2;
 	}
 	// callling inline functions and also checking the existance of source distination and different checks
@@ -332,7 +312,7 @@ public:
 	{
 		if (checkExistenceOfMergingDirectries(head, source, distination))
 		{
-			Node* temp = mergeTwoDirectries(head, source, distination);
+			Node* temp = helperInMergingDirectries(head, source);
 			if (temp != NULL)
 			{
 				insertADirectryAtGivenDis(head, temp, distination, rename);
@@ -341,23 +321,43 @@ public:
 		}
 		
 	}
-	bool  deleteAFile(Node*& root, string name)
+	void deleteADirectry(wstring source)
 	{
-		if (root == NULL)
+		if (searchADirectry(head,source))
 		{
-			return 0;
+			Node* temp = helperInMergingDirectries(head, source);
+			if (temp != NULL)
+			{
+				int n;
+				wstring distination;
+				string rename;
+				cout << "OUTPUT : given folder is not empty do you want to merge it with an other folder\npress 1 to merge or 0 if not to merge" << endl;
+				cin >> n;
+				cout << "OUTPUT : Enter distination path with full name" << endl;
+				cin.ignore();
+				getline(wcin, distination);
+				cout << "Enter new name of distination directry" << endl;
+				getline(cin, rename);
+				if (n == 1)
+				{
+					if (checkExistenceOfMergingDirectries(head, source, distination))
+					{
+						insertADirectryAtGivenDis(head, temp, distination, rename);
+					}
+				}
+				else
+				{
+					cout << "OUTPUT : File will not merge" << endl;
+				}
+			}
+			else
+			{
+				cout << "OUTPUT : folder was empty therefore it is deleted successfully" << endl;
+			}
+
 		}
-		if (root->dir->getName() == name)
-		{
-			Node* temp = root;
-			root = root->right;
-			delete temp;
-			return 1;
-		}
-		bool check1=deleteAFile(root->left, name);
-		bool check2=deleteAFile(root->right, name);
-		return check1 || check2;
 	}
+	
 	void moveAFile(string name, wstring distination)
 	{
 		if (checkExistenceOfCopingAndMovingFiles(head, name, distination))
@@ -390,9 +390,59 @@ public:
 			}
 		}
 	}
+	void deleteAFile(string name)
+	{
+		if (deleteAFile(head, name))
+		{
+			cout << "OUTPUT : file deleted successfully" << endl;
+		}
+		else
+		{
+			cout << "ERROR : file with name "<<name<<" does not exits" << endl;
+		}
+	}
 	// These functions are private because they are used just to help public functions 
 	//accessing these functions in main does not make any sense
 private:
+	bool searchAFile(Node* root, string name)
+	{
+		if (root == NULL)
+		{
+			return 0;
+		}
+
+		if (root->dir->getName() == name)
+		{
+			return 1;
+		}
+		bool check1 = searchAFile(root->left, name);
+		bool check2 = searchAFile(root->right, name);
+		return check1 || check2;
+	}
+	bool  deleteAFile(Node*& root, string name)
+	{
+		if (root == NULL)
+		{
+			return 0;
+		}
+		if (root->dir->getName() == name)
+		{
+			locale loc;
+			wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+
+			// Convert wstring to string
+			wcout << root->dir->getLocation()<<endl;
+			string path = converter.to_bytes(root->dir->getLocation());
+			deleteFile(path);
+			Node* temp = root;
+			root = root->right;
+			delete temp;
+			return 1;
+		}
+		bool check1 = deleteAFile(root->left, name);
+		bool check2 = deleteAFile(root->right, name);
+		return check1 || check2;
+	}
 	// function which check space at given distination
 	bool checkSpaceForDirectry(Node* root, wstring distination)
 	{
@@ -438,7 +488,7 @@ private:
 			}
 			else
 			{
-				cout << "ERROR : directry is ful" << endl;
+				cout << "ERROR : directry is full" << endl;
 				return 0;
 			}
 		}
@@ -518,6 +568,13 @@ private:
 		if (root->dir->getLocation() == dis)
 		{
 			root->right = insertingNode;
+			locale loc;
+			wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+
+			// Convert wstring to string
+			string path = converter.to_bytes(dis);
+			path = path + "\\" + insertingNode->dir->getName();
+			createAFile(path);
 		}
 
 		insertAFileAtGivenDis(root->left, insertingNode, dis);
@@ -534,6 +591,14 @@ private:
 		{
 			root->dir->setName(rename);
 			root->left = insertingNode;
+			locale loc;
+			wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+
+			// Convert string to wstring
+			wstring wstr = converter.from_bytes(root->dir->getName());
+			dis += L"\\" + wstr;
+			wcout << dis << endl;
+			createADirectry(dis);
 		}
 
 		insertADirectryAtGivenDis(root->left, insertingNode, dis, rename);
@@ -557,7 +622,7 @@ private:
 		makeDublicate(root->left, newNode->left);
 		makeDublicate(root->right, newNode->right);
 	}
-	Node* mergeTwoDirectries(Node*& root, wstring sourceLoc, wstring distLoc) {
+	Node* helperInMergingDirectries(Node*& root, wstring sourceLoc) {
 		if (root == nullptr) {
 			return NULL;
 		}
@@ -572,6 +637,7 @@ private:
 				
 			}
 			else {
+				deleteDirectry(root->dir->getLocation());
 				deleteTree(root);
 				root = nullptr;
 				return temp;
@@ -580,66 +646,12 @@ private:
 			
 		}
 
-		Node* l=mergeTwoDirectries(root->left, sourceLoc, distLoc);
-		Node* r=mergeTwoDirectries(root->right, sourceLoc, distLoc);
+		Node* l= helperInMergingDirectries(root->left, sourceLoc);
+		Node* r= helperInMergingDirectries(root->right, sourceLoc);
 		if (l != NULL)
 		{
 			return l;
 		}
 		return r;
 	}
-
-	//void makeDeletion(Node* root, wstring locat, bool type)
-	//{
-		//if (root == NULL)
-		//{
-		//	return;
-		//}
-		//if (root->dir->getLocation() == locat)
-		//{
-		//	if (root->left == NULL && root->right == NULL)
-		//	{
-		//		if (type == 0)
-		//		{
-		//			deleteADirectry(locat);
-		//		}
-		//		else
-		//		{
-		//			locale loc;
-		//			wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-
-		//			// Convert wstring to string
-		//			string location = converter.to_bytes(locat);
-		//			deleteAFile(location);
-		//		}
-		//			
-		//		delete root;
-		//	}
-		//	else
-		//	{
-		//		int input;
-		//		cout << "WARNING : there is some data in this specific location\ndo you want to merge with other directry? \npress 1 to merge or press 0 if you don't want to merge." << endl;
-		//		cin >> input;
-		//		if (input)
-		//		{
-		//			if (type == 0)
-		//				deleteADirectry(locat);
-		//			else
-		//			{
-		//				locale loc;
-		//				wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-
-		//				// Convert wstring to string
-		//				string location = converter.to_bytes(locat);
-		//				deleteAFile(location);
-		//			}
-		//				
-		//			delete root;
-		//		}
-		//	}
-		//}
-		//makeDeletion(root->left, locat, type);
-		//makeDeletion(root->right, locat, type);
-	//}
-	
 };
